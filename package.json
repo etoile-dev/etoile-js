@@ -1,5 +1,5 @@
 {
-  "name": "@etoile/client",
+  "name": "@etoile-dev/client",
   "version": "0.1.0",
   "description": "Official JavaScript SDK for the Étoile API - Add AI-powered semantic search to your app in seconds",
   "keywords": [

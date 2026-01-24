@@ -8,7 +8,7 @@
   <img src="https://etoile.dev/assets/hands-of-god.jpg" alt="Add search to your app in seconds" width="100%" />
 </p>
 
-<h1 align="center">@etoile/client</h1>
+<h1 align="center">@etoile-dev/client</h1>
 
 <p align="center">
   <strong>Add AI search to your app in seconds.</strong>
@@ -41,7 +41,7 @@ Drop in your content—text, images, URLs—and your users can instantly find an
 ## Install
 
 ```bash
-npm install @etoile/client
+npm i @etoile-dev/client
 ```
 
 ---
@@ -49,7 +49,7 @@ npm install @etoile/client
 ## Quickstart
 
 ```ts
-import { Etoile } from "@etoile/client";
+import { Etoile } from "@etoile-dev/client";
 
 const etoile = new Etoile({ apiKey: process.env.ETOILE_API_KEY! });
 
