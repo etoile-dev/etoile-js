@@ -1,7 +1,28 @@
 {
   "name": "@etoile/client",
-  "version": "0.0.0",
-  "description": "Official SDK for the Etoile API",
+  "version": "0.1.0",
+  "description": "Official JavaScript SDK for the Étoile API - Add AI-powered semantic search to your app in seconds",
+  "keywords": [
+    "etoile",
+    "search",
+    "ai",
+    "semantic-search",
+    "vector-search",
+    "sdk",
+    "api",
+    "client",
+    "typescript"
+  ],
+  "author": "Etoile",
+  "license": "MIT",
+  "homepage": "https://etoile.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etoile-dev/etoile-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/etoile-dev/etoile-js/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,7 +34,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
