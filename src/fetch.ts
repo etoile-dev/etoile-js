@@ -18,7 +18,7 @@ const parseErrorPayload = async (response: Response): Promise<unknown> => {
 export const fetchJson = async <T>(
     config: FetchConfig,
     path: string,
-    options: { method: "GET" | "POST"; body?: unknown },
+    options: { method: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown },
 ): Promise<T> => {
     try {
         const response = await fetch(`${config.baseUrl}${path}`, {

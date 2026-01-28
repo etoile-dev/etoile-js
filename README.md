@@ -112,6 +112,14 @@ Search indexed content.
 
 Returns `{ query, results }` where each result includes `external_id`, `title`, `collection`, `score`, and `metadata`.
 
+### `etoile.delete(id)`
+
+Remove a document from the index by its ID.
+
+### `etoile.patch({ id, metadata })`
+
+Update a document's metadata.
+
 ---
 
 ## Why Étoile?

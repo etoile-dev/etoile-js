@@ -1,6 +1,6 @@
 import { createEtoileError } from "./errors";
 import { fetchJson } from "./fetch";
-import type { IndexInput, SearchInput, SearchResponse } from "./types";
+import type { IndexInput, PatchInput, SearchInput, SearchResponse } from "./types";
 
 const API_URL = "https://etoile.dev/api/v1";
 
@@ -57,6 +57,7 @@ const validateCollections = (collections: unknown): string[] => {
 export class Etoile {
     private readonly config: {
         apiKey: string;
+        baseUrl: string;
     };
 
     /**
@@ -70,7 +71,7 @@ export class Etoile {
      * const etoile = new Etoile({ apiKey: process.env.ETOILE_API_KEY! });
      * ```
      */
-    constructor(config: { apiKey: string }) {
+    constructor(config: { apiKey: string; baseUrl?: string }) {
         if (!config || typeof config !== "object") {
             throw createEtoileError("INVALID_INPUT", "Config is required.");
         }
@@ -79,6 +80,7 @@ export class Etoile {
 
         this.config = Object.freeze({
             apiKey: config.apiKey,
+            baseUrl: config.baseUrl ?? API_URL,
         });
     }
 
@@ -109,7 +111,7 @@ export class Etoile {
         assertNonEmptyString(input.title, "title");
         assertContent(input.content);
 
-        await fetchJson<unknown>({ apiKey: this.config.apiKey, baseUrl: API_URL }, "/index", {
+        await fetchJson<unknown>(this.config, "/index", {
             method: "POST",
             body: {
                 id: input.id,
@@ -163,9 +165,58 @@ export class Etoile {
             offset: input.offset ?? 0,
         };
 
-        return fetchJson<SearchResponse>({ apiKey: this.config.apiKey, baseUrl: API_URL }, "/search", {
+        return fetchJson<SearchResponse>(this.config, "/search", {
             method: "POST",
             body,
+        });
+    }
+
+    /**
+     * Delete an indexed document.
+     *
+     * @param id - Unique identifier for the document.
+     *
+     * @example
+     * ```ts
+     * await etoile.delete("starry-night");
+     * ```
+     */
+    async delete(id: string): Promise<void> {
+        assertNonEmptyString(id, "id");
+
+        await fetchJson<unknown>(this.config, "/documents", {
+            method: "DELETE",
+            body: { id },
+        });
+    }
+
+    /**
+     * Update a document's metadata.
+     *
+     * @param input - The update parameters.
+     * @param input.id - Unique identifier for the document.
+     * @param input.metadata - Metadata to update.
+     *
+     * @example
+     * ```ts
+     * await etoile.patch({
+     *   id: "starry-night",
+     *   metadata: { artist: "Vincent van Gogh", year: 1889, museum: "MoMA" },
+     * });
+     * ```
+     */
+    async patch(input: PatchInput): Promise<void> {
+        assertNonEmptyString(input.id, "id");
+        if (!input.metadata || typeof input.metadata !== "object") {
+            throw createEtoileError("INVALID_INPUT", "metadata is required.");
+        }
+
+        await fetchJson<unknown>(this.config, "/documents", {
+            method: "PATCH",
+            body: {
+                id: input.id,
+                metadata: input.metadata,
+            },
         });
     }
 }

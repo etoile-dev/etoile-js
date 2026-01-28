@@ -53,3 +53,13 @@ export type SearchResponse = {
     /** Matching results. */
     results: SearchResult[];
 };
+
+/**
+ * Input for updating a document's metadata.
+ */
+export type PatchInput = {
+    /** Unique identifier for the document. */
+    id: string;
+    /** Metadata to update. */
+    metadata: Record<string, unknown>;
+};
