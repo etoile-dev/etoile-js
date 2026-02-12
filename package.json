@@ -1,6 +1,6 @@
 {
   "name": "@etoile-dev/client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Official JavaScript SDK for the Étoile API - Add AI-powered semantic search to your app in seconds",
   "keywords": [
     "etoile",
@@ -24,13 +24,14 @@
     "url": "https://github.com/etoile-dev/etoile-js/issues"
   },
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
@@ -39,11 +40,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "tsup": "^8.5.1",
     "typescript": "^5.0.0"
   }
 }
