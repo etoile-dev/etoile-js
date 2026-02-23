@@ -34,6 +34,8 @@ Drop in your content—text, images, URLs—and your users can instantly find an
 
 - **Fast.** Results in milliseconds, even at scale.
 - **Easy.** Drop in your content. Étoile takes care of the rest.
+- **Filterable.** Narrow results with structured metadata filters.
+- **Smart filters.** Let the AI extract filters from natural-language queries.
 - **Crafted.** An API you'll enjoy using.
 
 ---
@@ -103,14 +105,65 @@ Index a document.
 
 Search indexed content.
 
-| Field         | Type       | Required | Default |
-|---------------|------------|----------|---------|
-| `query`       | `string`   | ✓        |         |
-| `collections` | `string[]` | ✓        |         |
-| `limit`       | `number`   |          | `10`    |
-| `offset`      | `number`   |          | `0`     |
+| Field         | Type             | Required | Default |
+|---------------|------------------|----------|---------|
+| `query`       | `string`         | ✓        |         |
+| `collections` | `string[]`       | ✓        |         |
+| `limit`       | `number`         |          | `10`    |
+| `offset`      | `number`         |          | `0`     |
+| `filters`     | `SearchFilter[]` |          |         |
+| `autoFilters` | `boolean`        |          |         |
 
-Returns `{ query, results }` where each result includes `external_id`, `title`, `collection`, `score`, and `metadata`.
+`filters` and `autoFilters` are mutually exclusive.
+
+Returns `{ query, results, appliedFilters?, refinedQuery? }` where each result includes `external_id`, `title`, `collection`, `score`, and `metadata`.
+
+#### Filter by metadata
+
+Pass `filters` to narrow results to documents whose metadata matches your conditions:
+
+```ts
+const { results } = await etoile.search({
+  query: "espresso machine",
+  collections: ["products"],
+  filters: [
+    { key: "category", operator: "eq", value: "kitchen" },
+    { key: "price", operator: "lte", value: 300 },
+    { key: "inStock", operator: "eq", value: true },
+  ],
+});
+```
+
+Each filter is a `{ key, operator, value }` object. All filters are combined with AND logic.
+
+| Operator       | Meaning                                          |
+|----------------|--------------------------------------------------|
+| `eq`           | Equal to                                         |
+| `neq`          | Not equal to                                     |
+| `gt`           | Greater than                                     |
+| `gte`          | Greater than or equal                            |
+| `lt`           | Less than                                        |
+| `lte`          | Less than or equal                               |
+| `in`           | Matches any value in the list                    |
+| `not_in`       | Matches none of the values in the list           |
+| `contains_all` | Metadata array contains all of the given values  |
+| `contains_any` | Metadata array contains at least one given value |
+| `contains_none`| Metadata array contains none of the given values |
+
+#### Smart filters (AI-extracted)
+
+Set `autoFilters: true` to let the AI extract structured filters directly from the natural-language query. The refined semantic query and the extracted filters are returned alongside your results:
+
+```ts
+const { results, refinedQuery, appliedFilters } = await etoile.search({
+  query: "top-rated Adidas running shoes under $150",
+  collections: ["products"],
+  autoFilters: true,
+});
+
+console.log(refinedQuery);   // "running shoes"
+console.log(appliedFilters); // [{ key: "brand", operator: "eq", value: "Adidas" }, ...]
+```
 
 ### `etoile.delete(id)`
 

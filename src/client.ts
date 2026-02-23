@@ -131,19 +131,37 @@ export class Etoile {
      * @param input.collections - Collections to search in.
      * @param input.limit - Maximum number of results (default: 10).
      * @param input.offset - Number of results to skip (default: 0).
+     * @param input.filters - Metadata filters. Mutually exclusive with `autoFilters`.
+     * @param input.autoFilters - Let the AI extract filters from the query. Mutually exclusive with `filters`.
      * @returns Search results with scores and metadata.
      *
      * @example
      * ```ts
+     * // Basic search
      * const { results } = await etoile.search({
      *   query: "swirling sky painting",
      *   collections: ["paintings", "artists"],
      *   limit: 5,
      * });
      *
-     * results.forEach((result) => {
-     *   console.log(result.title, result.score);
+     * // With explicit filters
+     * const filtered = await etoile.search({
+     *   query: "comfortable shoe",
+     *   collections: ["products"],
+     *   filters: [
+     *     { key: "category", operator: "in", value: ["running", "training"] },
+     *     { key: "price", operator: "lte", value: 150 },
+     *   ],
      * });
+     *
+     * // With smart filters (AI-extracted)
+     * const smart = await etoile.search({
+     *   query: "top-rated Adidas running shoes under $150",
+     *   collections: ["products"],
+     *   autoFilters: true,
+     * });
+     * console.log(smart.refinedQuery);    // "running shoes"
+     * console.log(smart.appliedFilters);  // [{ key: "brand", operator: "eq", value: "Adidas" }, ...]
      * ```
      */
     async search(input: SearchInput): Promise<SearchResponse> {
@@ -158,12 +176,47 @@ export class Etoile {
             throw createEtoileError("INVALID_INPUT", "offset must be a non-negative number.");
         }
 
+        if (input.filters !== undefined && input.autoFilters !== undefined) {
+            throw createEtoileError(
+                "INVALID_INPUT",
+                "filters and autoFilters are mutually exclusive.",
+            );
+        }
+
+        if (input.filters !== undefined) {
+            if (!Array.isArray(input.filters) || input.filters.length === 0) {
+                throw createEtoileError(
+                    "INVALID_INPUT",
+                    "filters must be a non-empty array.",
+                );
+            }
+
+            for (const filter of input.filters) {
+                if (!filter || typeof filter !== "object") {
+                    throw createEtoileError("INVALID_INPUT", "Each filter must be an object.");
+                }
+                assertNonEmptyString(filter.key, "filter.key");
+                assertNonEmptyString(filter.operator, "filter.operator");
+                if (filter.value === undefined || filter.value === null) {
+                    throw createEtoileError("INVALID_INPUT", "filter.value is required.");
+                }
+            }
+        }
+
         const body: Record<string, unknown> = {
             query: input.query,
             collections,
             limit: input.limit ?? 10,
             offset: input.offset ?? 0,
         };
+
+        if (input.filters !== undefined) {
+            body.filters = input.filters;
+        }
+
+        if (input.autoFilters !== undefined) {
+            body.autoFilters = input.autoFilters;
+        }
 
         return fetchJson<SearchResponse>(this.config, "/search", {
             method: "POST",

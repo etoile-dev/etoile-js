@@ -15,6 +15,34 @@ export type IndexInput = {
 };
 
 /**
+ * Comparison operator for metadata filters.
+ */
+export type FilterOperator =
+    | "eq"
+    | "neq"
+    | "gt"
+    | "gte"
+    | "lt"
+    | "lte"
+    | "in"
+    | "not_in"
+    | "contains_all"
+    | "contains_any"
+    | "contains_none";
+
+/**
+ * A metadata filter condition applied to search results.
+ */
+export type SearchFilter = {
+    /** Metadata key to filter on. */
+    key: string;
+    /** Comparison operator. */
+    operator: FilterOperator;
+    /** Value to compare against. */
+    value: string | number | boolean | string[];
+};
+
+/**
  * Input for searching indexed content.
  */
 export type SearchInput = {
@@ -26,6 +54,10 @@ export type SearchInput = {
     limit?: number;
     /** Number of results to skip. Defaults to 0. */
     offset?: number;
+    /** Metadata filters. Mutually exclusive with `autoFilters`. */
+    filters?: SearchFilter[];
+    /** Let the AI extract filters from the query. Mutually exclusive with `filters`. */
+    autoFilters?: boolean;
 };
 
 /**
@@ -52,6 +84,10 @@ export type SearchResponse = {
     query: string;
     /** Matching results. */
     results: SearchResult[];
+    /** Filters that were applied (present when filters or autoFilters were used). */
+    appliedFilters?: SearchFilter[];
+    /** Refined query rewritten by the AI (present when autoFilters was used). */
+    refinedQuery?: string;
 };
 
 /**

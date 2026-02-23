@@ -1,6 +1,6 @@
 {
   "name": "@etoile-dev/client",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Official JavaScript SDK for the Étoile API - Add AI-powered semantic search to your app in seconds",
   "keywords": [
     "etoile",
@@ -42,6 +42,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "clean": "rm -rf dist",
+    "test": "npm run build && node --test scripts/test.mjs",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
