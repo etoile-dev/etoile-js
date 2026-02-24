@@ -1,6 +1,6 @@
 import { createEtoileError } from "./errors";
 import { fetchJson } from "./fetch";
-import type { IndexInput, PatchInput, SearchInput, SearchResponse } from "./types";
+import type { Document, IndexInput, ListInput, PatchInput, SearchInput, SearchResponse } from "./types";
 
 const API_URL = "https://etoile.dev/api/v1";
 
@@ -221,6 +221,59 @@ export class Etoile {
         return fetchJson<SearchResponse>(this.config, "/search", {
             method: "POST",
             body,
+        });
+    }
+
+    /**
+     * List indexed documents, ordered by most recently updated.
+     *
+     * @param input - Optional pagination parameters.
+     * @param input.limit - Maximum number of documents to return (default: 20, max: 100).
+     * @param input.offset - Number of documents to skip (default: 0).
+     * @returns An array of documents.
+     *
+     * @example
+     * ```ts
+     * const { documents } = await etoile.list({ limit: 50 });
+     * documents.forEach((doc) => console.log(doc.external_id, doc.title));
+     * ```
+     */
+    async list(input: ListInput = {}): Promise<{ documents: Document[] }> {
+        if (input.limit !== undefined && (!Number.isFinite(input.limit) || input.limit <= 0)) {
+            throw createEtoileError("INVALID_INPUT", "limit must be a positive number.");
+        }
+
+        if (input.offset !== undefined && (!Number.isFinite(input.offset) || input.offset < 0)) {
+            throw createEtoileError("INVALID_INPUT", "offset must be a non-negative number.");
+        }
+
+        const params = new URLSearchParams();
+        if (input.limit !== undefined) params.set("limit", String(input.limit));
+        if (input.offset !== undefined) params.set("offset", String(input.offset));
+        const qs = params.size > 0 ? `?${params}` : "";
+
+        return fetchJson<{ documents: Document[] }>(this.config, `/documents${qs}`, {
+            method: "GET",
+        });
+    }
+
+    /**
+     * Get a single indexed document by its ID.
+     *
+     * @param id - The document's external (user-provided) identifier.
+     * @returns The document, or throws if not found.
+     *
+     * @example
+     * ```ts
+     * const { document } = await etoile.get("starry-night");
+     * console.log(document.title, document.metadata);
+     * ```
+     */
+    async get(id: string): Promise<{ document: Document }> {
+        assertNonEmptyString(id, "id");
+
+        return fetchJson<{ document: Document }>(this.config, `/documents/${encodeURIComponent(id)}`, {
+            method: "GET",
         });
     }
 

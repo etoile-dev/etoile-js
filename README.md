@@ -165,6 +165,31 @@ console.log(refinedQuery);   // "running shoes"
 console.log(appliedFilters); // [{ key: "brand", operator: "eq", value: "Adidas" }, ...]
 ```
 
+### `etoile.list({ limit?, offset? })`
+
+List indexed documents, ordered by most recently updated.
+
+| Field    | Type     | Required | Default |
+|----------|----------|----------|---------|
+| `limit`  | `number` |          | `20`    |
+| `offset` | `number` |          | `0`     |
+
+Returns `{ documents }` where each document includes `external_id`, `collection`, `title`, `type`, `metadata`, `created_at`, and `updated_at`.
+
+```ts
+const { documents } = await etoile.list({ limit: 50 });
+documents.forEach((doc) => console.log(doc.external_id, doc.title));
+```
+
+### `etoile.get(id)`
+
+Get a single indexed document by its external ID. Throws if not found.
+
+```ts
+const { document } = await etoile.get("starry-night");
+console.log(document.title, document.metadata);
+```
+
 ### `etoile.delete(id)`
 
 Remove a document from the index by its ID.

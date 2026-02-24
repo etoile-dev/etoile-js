@@ -91,6 +91,38 @@ export type SearchResponse = {
 };
 
 /**
+ * A full document as returned by the list and get endpoints.
+ */
+export type Document = {
+    /** Internal numeric ID. */
+    id: number;
+    /** The document's external (user-provided) identifier. */
+    external_id: string;
+    /** Collection the document belongs to. */
+    collection: string;
+    /** Human-readable title. */
+    title: string;
+    /** Content type (e.g. "text", "image", "url"). */
+    type: string;
+    /** Metadata stored with the document. */
+    metadata: Record<string, unknown>;
+    /** ISO timestamp of when the document was indexed. */
+    created_at: string;
+    /** ISO timestamp of the last metadata update. */
+    updated_at: string;
+};
+
+/**
+ * Input for listing indexed documents.
+ */
+export type ListInput = {
+    /** Maximum number of documents to return. Defaults to 20, capped at 100. */
+    limit?: number;
+    /** Number of documents to skip. Defaults to 0. */
+    offset?: number;
+};
+
+/**
  * Input for updating a document's metadata.
  */
 export type PatchInput = {

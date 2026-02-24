@@ -147,6 +147,35 @@ describe("etoile.patch() — input validation", () => {
   });
 });
 
+describe("etoile.list() — input validation", () => {
+  const etoile = new Etoile({ apiKey: "dummy" });
+
+  it("throws on invalid limit", async () => {
+    await assert.rejects(
+      () => etoile.list({ limit: 0 }),
+      { code: "INVALID_INPUT" },
+    );
+  });
+
+  it("throws on negative offset", async () => {
+    await assert.rejects(
+      () => etoile.list({ offset: -1 }),
+      { code: "INVALID_INPUT" },
+    );
+  });
+});
+
+describe("etoile.get() — input validation", () => {
+  const etoile = new Etoile({ apiKey: "dummy" });
+
+  it("throws on empty id", async () => {
+    await assert.rejects(
+      () => etoile.get(""),
+      { code: "INVALID_INPUT" },
+    );
+  });
+});
+
 // ── Integration tests (requires ETOILE_SECRET_KEY) ───────────────────
 
 describe("@etoile-dev/client — integration", () => {
@@ -170,7 +199,33 @@ describe("@etoile-dev/client — integration", () => {
     await wait(2000);
   });
 
-  // 2 ── Plain search
+  // 2 ── List
+  it("lists documents and includes the indexed document", async () => {
+    const { documents } = await etoile.list({ limit: 50 });
+
+    assert.ok(Array.isArray(documents), "documents should be an array");
+    assert.ok(documents.length > 0, "expected at least one document");
+
+    const doc = documents.find((d) => d.external_id === DOC_ID);
+    assert.ok(doc, "indexed document should appear in list");
+    assert.equal(doc.title, "Espresso Machine Pro");
+    assert.equal(doc.collection, COLLECTION);
+    assert.equal(typeof doc.created_at, "string");
+    assert.equal(typeof doc.updated_at, "string");
+  });
+
+  // 3 ── Get
+  it("gets the document by id", async () => {
+    const { document } = await etoile.get(DOC_ID);
+
+    assert.equal(document.external_id, DOC_ID);
+    assert.equal(document.title, "Espresso Machine Pro");
+    assert.equal(document.collection, COLLECTION);
+    assert.equal(document.metadata.category, "appliances");
+    assert.equal(typeof document.created_at, "string");
+  });
+
+  // 4 ── Plain search
   it("finds the indexed document", async () => {
     const { query, results } = await etoile.search({
       query: "espresso machine",
@@ -189,7 +244,7 @@ describe("@etoile-dev/client — integration", () => {
     assert.equal(hit.metadata.category, "appliances");
   });
 
-  // 3 ── Patch
+  // 5 ── Patch
   it("updates metadata", async () => {
     await etoile.patch({
       id: DOC_ID,
@@ -199,7 +254,7 @@ describe("@etoile-dev/client — integration", () => {
     await wait(1000);
   });
 
-  // 4 ── Filters
+  // 6 ── Filters
   it("searches with metadata filters", async () => {
     const result = await etoile.search({
       query: "espresso",
@@ -217,7 +272,7 @@ describe("@etoile-dev/client — integration", () => {
     assert.equal(result.results[0].metadata.sale, true);
   });
 
-  // 5 ── Non-matching filter
+  // 7 ── Non-matching filter
   it("returns empty results for a non-matching filter", async () => {
     const result = await etoile.search({
       query: "espresso",
@@ -228,7 +283,7 @@ describe("@etoile-dev/client — integration", () => {
     assert.equal(result.results.length, 0);
   });
 
-  // 6 ── Auto filters
+  // 8 ── Auto filters
   it("extracts filters from a natural-language query (autoFilters)", async () => {
     const result = await etoile.search({
       query: "kitchen espresso machines under $300",
@@ -251,13 +306,13 @@ describe("@etoile-dev/client — integration", () => {
     );
   });
 
-  // 7 ── Delete
+  // 9 ── Delete
   it("deletes the document", async () => {
     await etoile.delete(DOC_ID);
     await wait(1000);
   });
 
-  // 8 ── Confirm deletion
+  // 10 ── Confirm deletion
   it("no longer returns the deleted document", async () => {
     const { results } = await etoile.search({
       query: "espresso machine",
