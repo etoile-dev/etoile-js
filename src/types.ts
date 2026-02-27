@@ -108,7 +108,7 @@ export type Document = {
     metadata: Record<string, unknown>;
     /** ISO timestamp of when the document was indexed. */
     created_at: string;
-    /** ISO timestamp of the last metadata update. */
+    /** ISO timestamp of the last document update. */
     updated_at: string;
 };
 
@@ -123,11 +123,13 @@ export type ListInput = {
 };
 
 /**
- * Input for updating a document's metadata.
+ * Input for updating a document.
  */
-export type PatchInput = {
+export type UpdateInput = {
     /** Unique identifier for the document. */
     id: string;
-    /** Metadata to update. */
-    metadata: Record<string, unknown>;
+    /** Optional human-readable title to update. */
+    title?: string;
+    /** Optional metadata to replace on the document. */
+    metadata?: Record<string, unknown>;
 };

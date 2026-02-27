@@ -129,19 +129,26 @@ describe("etoile.delete() — input validation", () => {
   });
 });
 
-describe("etoile.patch() — input validation", () => {
+describe("etoile.update() — input validation", () => {
   const etoile = new Etoile({ apiKey: "dummy" });
 
   it("throws on empty id", async () => {
     await assert.rejects(
-      () => etoile.patch({ id: "", metadata: {} }),
+      () => etoile.update({ id: "", metadata: {} }),
       { code: "INVALID_INPUT" },
     );
   });
 
-  it("throws on missing metadata", async () => {
+  it("throws when both title and metadata are missing", async () => {
     await assert.rejects(
-      () => etoile.patch({ id: "x", metadata: null }),
+      () => etoile.update({ id: "x" }),
+      { code: "INVALID_INPUT" },
+    );
+  });
+
+  it("throws on invalid metadata", async () => {
+    await assert.rejects(
+      () => etoile.update({ id: "x", metadata: null }),
       { code: "INVALID_INPUT" },
     );
   });
@@ -244,14 +251,19 @@ describe("@etoile-dev/client — integration", () => {
     assert.equal(hit.metadata.category, "appliances");
   });
 
-  // 5 ── Patch
-  it("updates metadata", async () => {
-    await etoile.patch({
+  // 5 ── Update document
+  it("updates title and metadata", async () => {
+    await etoile.update({
       id: DOC_ID,
+      title: "Espresso Machine Pro 2",
       metadata: { category: "kitchen", price: 249, inStock: true, sale: true },
     });
 
     await wait(1000);
+
+    const { document } = await etoile.get(DOC_ID);
+    assert.equal(document.title, "Espresso Machine Pro 2");
+    assert.equal(document.metadata.category, "kitchen");
   });
 
   // 6 ── Filters

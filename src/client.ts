@@ -1,6 +1,6 @@
 import { createEtoileError } from "./errors";
 import { fetchJson } from "./fetch";
-import type { Document, IndexInput, ListInput, PatchInput, SearchInput, SearchResponse } from "./types";
+import type { Document, IndexInput, ListInput, SearchInput, SearchResponse, UpdateInput } from "./types";
 
 const API_URL = "https://etoile.dev/api/v1";
 
@@ -35,7 +35,7 @@ const validateCollections = (collections: unknown): string[] => {
 };
 
 /**
- * Étoile client for indexing and searching content.
+ * Etoile client for indexing and searching content.
  *
  * @example
  * ```ts
@@ -61,10 +61,10 @@ export class Etoile {
     };
 
     /**
-     * Create a new Étoile client.
+     * Create a new Etoile client.
      *
      * @param config - Configuration options.
-     * @param config.apiKey - Your Étoile API key. Get one at https://etoile.dev
+     * @param config.apiKey - Your Etoile API key. Get one at https://etoile.dev
      *
      * @example
      * ```ts
@@ -297,32 +297,45 @@ export class Etoile {
     }
 
     /**
-     * Update a document's metadata.
+     * Update an indexed document.
      *
      * @param input - The update parameters.
      * @param input.id - Unique identifier for the document.
-     * @param input.metadata - Metadata to update.
+     * @param input.title - Optional new title for the document.
+     * @param input.metadata - Optional metadata object to replace on the document.
      *
      * @example
      * ```ts
-     * await etoile.patch({
+     * await etoile.update({
      *   id: "starry-night",
+     *   title: "The Starry Night (1889)",
      *   metadata: { artist: "Vincent van Gogh", year: 1889, museum: "MoMA" },
      * });
      * ```
      */
-    async patch(input: PatchInput): Promise<void> {
+    async update(input: UpdateInput): Promise<void> {
         assertNonEmptyString(input.id, "id");
-        if (!input.metadata || typeof input.metadata !== "object") {
-            throw createEtoileError("INVALID_INPUT", "metadata is required.");
+        if (input.title === undefined && input.metadata === undefined) {
+            throw createEtoileError("INVALID_INPUT", "title or metadata is required.");
+        }
+        if (input.title !== undefined) {
+            assertNonEmptyString(input.title, "title");
+        }
+        if (
+            input.metadata !== undefined &&
+            (!input.metadata || typeof input.metadata !== "object" || Array.isArray(input.metadata))
+        ) {
+            throw createEtoileError("INVALID_INPUT", "metadata must be an object.");
         }
 
         await fetchJson<unknown>(this.config, "/documents", {
             method: "PATCH",
             body: {
                 id: input.id,
+                title: input.title,
                 metadata: input.metadata,
             },
         });
     }
+
 }

@@ -5,7 +5,7 @@ export type {
     FilterOperator,
     IndexInput,
     ListInput,
-    PatchInput,
+    UpdateInput,
     SearchFilter,
     SearchInput,
     SearchResponse,
